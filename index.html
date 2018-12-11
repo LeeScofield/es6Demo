@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <script type="text/javascript">
+        /**
+         * 1、Object.freeze 冻结，无法更改,也无法push进数组
+         * 变量var ,let ,const，ES6默认为严格模式
+         */
+        const config = Object.freeze({
+            host:"xxx",
+            port:3306
+        });
+
+       // config.port = 9; //Object.freeze冻结，无法更改
+        /**
+         * 2、结构复制
+         */
+        let [a, b, c] = [2, 34, 5];
+        console.log(a,b,c); //输出 2 34 5
+        let [d,e,f] = [2,[4,6]];
+        console.log(d,e,f); //输出2 Array [4,6] undefined
+        let [g,[h,i]] = [5,[6,8]];
+        console.log(g,h,i); //输出5 6 8
+        let [j,k,l='没数据呀'] = [4,5];
+        console.log(j,k,l);
+
+        let json = {name:'lee',age:20,job:'花钱'};
+        let {name,age,job} = json;
+        console.log(name,age,job ); //lee 20 花钱
+        let {name:nn,age:aa,job:jj} = json;
+        console.log(nn,aa,jj); //起别名输出lee 20 花钱
+
+        let a1 = 1,a2 = 2;
+        [a2, a1] = [a1, a2];
+        console.log(a1, a2); //交换数据位置
+
+        /**
+         * 函数传参
+         * @param v1
+         * @param v2
+         */
+        function show({v1,v2='default'}) {
+            console.log(v1,v2);
+        };
+
+        show({v1:1});
+
+        /**
+         * 3、字符串模板
+         */
+        let name1 = 'zhangsan';
+        let age1 = 22;
+
+        console.log(`他叫${name1},今年${age1}岁`);
+
+        /**
+         * 4、string类型新增方法
+         * includes是否包括字符串
+         * startsWith以...开头
+         * endsWith以...结尾
+         * repeat重复多少次
+         * padStart向前添加，p1变更后字符串总长度，p2,添加内容
+         * padEnd向后添加，p1变更后字符串总长度，p2,添加内容
+         */
+
+        let str1 = 'hello';
+        let str2 = "world";
+        console.log(str1.includes('ll'));
+        console.log(str1.startsWith('he'));
+        console.log(str1.endsWith('lo'));
+        console.log(str1.repeat(2));
+        console.log(str1.padStart(str1.length + str2.length, str2));
+        console.log(str1.padEnd(str1.length + str2.length, str2));
+
+        /**
+         * 5、函数默认参数，箭头函数，剩余参数
+         *
+         */
+        //传参默认值
+        function show1(k='p1',v='p2') {
+            console.log(k,v);
+        };
+        show1('2');
+
+        //对象默认值
+        function show2({x=0,y=0} = {}) {
+            console.log(x,y);
+        };
+        show2(); //结果为0 0
+        show2({x: 9}); // 结果为9 0
+
+        /**
+         * 6、 ...可以将数组展开，收缩及接收剩下的参数
+         * 也可以复制数组
+         */
+        //...可以将数组展开
+        var aaa = [4, 3, 1];
+
+        console.log(aaa);  //返回[4,3,1]
+        console.log(...aaa); //返回 4 3 1
+
+        function show3(a,b,c) {
+            console.log(a,b,c);
+        }
+
+        show3(...[1,4,2]);
+
+        //...也可以将数据收缩成数组
+        function show4(...value) {
+            //将参数转为数组Array.prototype.slice.call(arguments);
+            console.log(value.sort()); //相当于Array.prototype.slice.call(arguments).sort()
+        }
+        show4(5,3,6);
+
+        //...接收剩下的参数
+        function show5(a,b,...c) {
+            console.log(a,b,c);
+        }
+
+        show5(1, 3, 4, 5, 3); //返回1 3 [4,5,3]
+        
+        //...复制数组
+        var arr1 = [1, 4, 6, 2];
+        var arr2 = [...arr1];
+        var arr3 = Array.from(arr1); //复制数组另一种方式
+        var arr4 = Object.assign([], arr1); //复制数组另一种方式
+        console.log(arr1,arr2,arr3,arr4);
+
+        /**
+         * 7、箭头函数 =>
+         * 1-不能new出来
+         * 2-内部的this ,定义函数所在对象,即父类对象，不在是运行时的对象
+         * 3-不能使用arguments，但可以用...来代替
+         */
+        let json1 = {
+            id:1,
+            show:function () {
+                setTimeout(() =>{
+                    console.log(this.id);
+                },1000)
+            }
+        }
+        json1.show();
+
+        /**
+         * 8、数组
+         * arr.forEach(function(value,index,arr),_this),  value为值，index,为下标，_this为function中this的指向，默认不传参为window
+         * arr.map(function(value,index,arr),_this),  map(...)返回一个新的数组，长度为arr长度，function中一般会有return 返回值
+         * arr.filter(function(value,index,arr),_this) ,filter(...)返回一个新的数组，function中return 返回值为true保留返回数据，false去掉该数组中的数据
+         * arr.some(function(value,index,arr),_this ),类似查找功能(fn有一个为true,整个some(...)为true)，some(...)返回一个boolean值，取决于function中return值
+         * arr.every(function(value,index,arr),_this),类似查找功能(所有为为true,整个every(...)为true，有一个为false，结果为false),every(...)返回一个boolean，取决于function中reutrn值
+         * arr.find(function(value,index,arr),_this)，类似于查找功能( 找出第一个符合条件的成员 )，如[3,45,7,6].find((value)=>value>5) 返回 45
+         * arr.findIndex(function(value,index,arr),_this)，类似于查找功能( 找元素下标，没找到返回-1 )，如[3,45,7,6].findIndex((value)=>value>5) 返回 1
+         * 以上7个方法参数都一样，every(...)可以用于判断数组中所有值是否都为奇数，如return value%2==1;
+         *
+         *
+         * arr.reduce(function(prev,cur,index,arr)),prev上一次运算结果,如：求数组总和,reduce((prev,cur)=>{return prev+cur})
+         * arr.reduceRight(function(prev,cur,index,arr)),prev上一次运算结果，从右边开始算起
+         *
+         * arr.fill(value,index,length)填充,let arr = new Array(5); arr.fill('hello',1,3); 返回：[empty,'hello','hello',empty,empty]
+         * 数组中新加属性arr.keys(),arr.entries()
+         *
+         * arr.includes(value)，判断数组是否包含value值，返回boolean
+         * 2**3表示2的三次方，同Math.pow(2,3);
+         *
+         */
+        console.log("查找...");
+        let abcd = ['hello', 'app', 'orange'];
+        console.log(abcd.some(value => {
+            return value.startsWith("hel");
+        }));
+
+        console.log("over.....");
+        let arr5 = [9, 4, 6];
+        
+        for (let [index,value] of arr5.entries() ){
+            console.log(index,value);
+        }
+        
+        console.log(2**3,Math.pow(2,3));
+
+        /**
+         * 类数组表示一般能有length方法的，如arguments,string，json数据中带length等
+         * Array.from(para)，para为类数组数据 ，如arguments,document.querySelectorAll()等，
+         * ES5中转数组方式为[].slice().call(arguments)
+         * 
+         * Array.of(a,b,c)，把一组值转成数据（没啥用） let arr0 = Array.of(4,5,2); 
+         */
+
+        let json2 = {0:'牛牛牛', 1: 77, length: 2};
+        console.log(Array.from(json2));
+
+        /**
+         * 9、json对象
+         * Object.is(a,b)，判断a和b是否相等（只比较肉眼看到的表面值）,如Object.is(NaN,NaN)返回true,Object.is(+0,-0)，返回false
+         * Object.assign(target,p1,p2)将p1,p2等等后面的参数合并到目标对象中 也可以通过Object.assign([],arr)复制数组
+         * 
+         * Object.keys(),
+         * Object.values(),`
+         * Object.entries()
+         * 可以通过let {keys,values,entries} = Object; 来解构
+         * for(let [key,value] of entries({a:1,b:2,c:3})){
+         *     
+         * }
+         * 
+         * 对象上... , ES2018 6月推出版本会有如：let josn = {a:1,b:2.c:3} ; let jsonCopy = {...json},//复制json ，let {x,y} = json; //x=1,y={b:2,c:3}
+         */
+
+        let address='武汉'; 
+        let code=30; 
+        let json3 = {
+                        address,
+                        code,
+                        showA(){
+                            console.log("showA");
+                        }
+                    };
+        console.log(json3);
+        json3.showA();
+        
+        let j1={a:1};
+        let j2={b:2, c: 3};
+        let j3={c: 4};
+
+        let j4 = Object.assign(j1, j2, j3);
+        console.log(j4);
+
+        /**
+         * 10、Promise,这里的P是大写
+         */
+        
+        let promise = new Promise(function (resolve, reject) {
+            //resolve成功时调用
+            //reject 失败时调用
+            resolve("成功");
+            reject("失败");
+        });
+        
+       /* promise.then(function (res) {
+            console.log(res);
+        },function (err) {
+            console.log(err);
+        })*/
+
+        //以上也可以写成
+        promise.then(res=>{
+            console.log(res);
+        },err=>{
+            console.log(err);
+        })
+
+        /**
+         * 还可以写成
+         * promise.then(res=>{}).catch(err=>{})
+         * 在catch中捕获err信息
+         */
+        
+        // let resolve = Promise.resolve(function (resolve) {
+        //
+        // })
+
+        //以下，相当于var resolved = new Promise((resolve)=>{resolve("aaa")})
+        //Promise.reject("bbb")与Promise.resolve("aaa")用法一样，在失败时调用
+        var resolved = Promise.resolve("aaa");
+      
+        resolved.then((str) =>
+            console.log(str)  //aaa
+        )
+        /**
+         * Promise.all([p1,p2,p3]);把Promise打包，放在一个数组里面，打包完还是一个Promise对象，必需确保p1,p2,p3这些对象都是resolve状态
+         * Promise.race([p1,p2,p3]);与all方法不同的是，p1,p2,p3这些对象只要第一个是resolve就返回，否则都不返回
+         */
+
+        let promiseAll = Promise.all([Promise.resolve("aaa"), Promise.resolve("bbb"), Promise.resolve("ccc")]);
+        promiseAll.then(data => {
+            //将[p1,p2,p3]数组中3个参数放在一个数组中
+            console.log(data); //返回[aaa,bbb,ccc]
+        })
+        
+        let promiseRace = Promise.race([Promise.resolve("aaa"), Promise.reject("bbb"), Promise.resolve("ccc")]);
+        promiseRace.then(data => {
+            console.log(data); // 返回aaa
+        })
+
+        /**
+         * 10、模块化
+         * script标签中加type=module lt;script type="module"gt;lt;/scriptgt;
+         * import 只能在服务器端使用
+         * import 导入多次，只会引入1次
+         *
+         * import 语法不能写到if里面
+         * 如 if(){import {a} from 'xx'}else{import {b} from 'xxb'}，这种写法会直接报错
+         * 动态引用可以用import('...'),...代表路径地址,返回一个promise对象,火狐好像还不支持。。。
+         * //其中'xxx' 可以当参数传入
+         * import('xxx').then(resolve=>{
+         *
+         * })
+         *
+         *
+         *
+         */
+
+        /**
+         * 11、类和继承
+         */
+        let pa = "showPa";
+        class Person{
+            constructor(name,age){
+                this.name = name;
+                this.age = age;
+                console.log(`我的名字是${name},我的年龄是${age}`);
+                this.showThis = this.showThis.bind(this);
+            }
+            set sex(val){
+                console.log(`setter value is ${val}`);
+            }
+            get sex(){
+                console.log(`getter is invoked`);
+            }
+            showName(){
+                console.log(`显示名字：${name}`);
+            }
+            //这里没逗号“，”, 不是json,方法名前也不能加function
+            showAge(){
+                console.log(`显示年龄:${age}`);
+            }
+            [pa](){
+                console.log("随便点个什么");
+            }
+            showThis(){
+                console.log(`这个this是${this.name}`);
+            }
+            static dosomething(){
+                console.log("这是一个静态方法！");
+            }
+        }
+
+        let p = new Person("张三", 19);
+        p.showName();
+        p.showAge();
+        p.showPa();
+        p[pa]();
+        let {showThis} = p;
+        showThis();
+        Person.dosomething();  //静态方法
+        p.sex = '男';
+        console.log(p.sex);
+
+        class Student extends Person{
+            constructor(name,address) {
+                super(name);
+                this.address = address;
+            }
+
+            showName() {
+                super.showName();
+                console.log("这个是子类student的showName方法");
+            }
+        }
+
+        let s = new Student("赵大", '上海');
+        s.showName();
+
+
+        /**
+         * 12、Symbol ，首字母大写，不能new 出来
+         * symbol用typeof 出来的类型是 symbol
+         * 如果定义josn中的key ,用for in 无法循环出来
+         */
+        let sym = Symbol("hello symbol");
+        console.log(sym);
+
+        let symObj = {
+            a:1,
+            b:2,
+            [sym]:'abc'
+        }
+        console.log(symObj[sym]);
+
+
+        /**
+         * 13，genertor
+         * 语法function * method(){
+         *     yield ...
+         * }
+         * 使用next()方法查出第一个yield中元素，最后一个对象里面的done值为true
+         * next()方法用完后，genertor中的值为空，即再次调用next或循环是取不到里面的值
+         */
+
+
+        function * gen() {
+            yield 'welcome';
+            yield 'to';
+            return 'xian'
+        }
+
+        let g1 = gen();
+        // console.log(g1.next()); //{ value: "welcome", done: false }
+        // console.log(g1.next()); //{ value: "to", done: false }
+        // console.log(g1.next()); //{ value: "xian", done: true }
+
+
+        //for in  取不到最后一个return 的值
+        // for (let val of g1) {
+        //     console.log(val);
+        // }
+
+        //解构也取不到最后一个return 的值
+        // let [x1,y1,z1] = g1;
+        // console.log(x1,y1,z1); //welcome to undefined
+
+        //扩展运算符 ，也取不到最一个return
+        // console.log(...g1);
+
+        //变数组
+        console.log(Array.from(g1));
+
+        /**
+         * axois配合generator的使用
+         */
+        function * genertorAxios(){
+            let val = yield 'users';
+            yield axios.get(`http://jsonplaceholder.typicode.com/${val}`);
+
+        }
+        let ax = genertorAxios();
+        let axName = ax.next().value;
+
+        let result = ax.next(axName).value.then(req => {
+            console.log(req.data);
+        })
+
+
+        // axios.get('http://jsonplaceholder.typicode.com/users')
+        //     .then(function (response) {
+        //         return response.data;
+        //     }).then(function (response) {
+        //         console.log(response);
+        //     }).catch(function (error) {
+        //         console.log(error);
+        //     });
+
+        /**
+         * 14、async 和 await
+         * await后面可以跟promise，数字 ，字符， boolean值
+         * 如果await有一个抛出导常，后面的await都不会再执行了
+         * 不管async最后return 是什么值，都会是一个promise对象
+         * 解决方法1,
+         * try{}catch(e){}
+         * 解决方法2
+         * await Procemis.reject('出现问题了').cathc(e=>{})
+         */
+
+        async function fu() {
+            console.log("------");
+            let result1 = await axios.get(`http://jsonplaceholder.typicode.com/users`);
+            console.log(result1.data);
+            console.log("------");
+            let result2 = await axios.get(`http://jsonplaceholder.typicode.com/posts/1`);
+            console.log(result2.data);
+            console.log("------");
+        }
+        fu();
+
+        /**
+         * 15、set用法
+         * new Set([]);里面只接收数组，换成对象会报错
+         * add('aaa'); 添加
+         * delete('aaa');删除
+         * has('aa');判断里面有没有传入的参数
+         * size,这个是属性，没有括号，返回set长度
+         * clear();清空set
+         *
+         * set里面的数据不能有重复
+         * let setArr = new Set();
+         * 用for in 可以循环set里面的数据
+         * setArr.keys(),setArr.values(),set.entries(),用法跟array一样
+         * Set也提供了forEach(fn(value,index){})方法，
+         * set只实际有key和value二个值，但是二个值是一样的，set.entries()用循环可以看出来
+         *
+         * 数组去重
+         * [...new Set(arr)];  将一个数组放入set去重，然后再扩展
+         *
+         * 操作set里中的数据，如果set中没有，但array中有方法，可以这样用
+         * let set = new Set([1,2,3]);
+         * set = new Set([...set].map(val => val*2));
+         *
+         * 还有个WeakSet ,不靠谱， 用法跟set差不多,不过没有set里面的length属性，也没clear()
+         */
+
+        /**
+         * 16、Map 的用法
+         * new Map();
+         * set(key,value); 设置一个值
+         * get(key);  获取一个值
+         * delete(key); 删除一项
+         * has(key); 判断有没有
+         * clear(); 清空
+         *
+         * map.keys();  //key集合
+         * map.value(); //value集合
+         * map.entries(); 实体集合
+         * 循环方法
+         * for(let [key,value] of map)
+         */
+
+
+        /**
+         * 17、进制转换
+         * Number新加方法
+         *  Number.isFinite(a) 判断是不是数字，整数，小数和负数以及0都可以
+         * Number.isInteger(a) 判断是不是整数
+         *
+         * 安全整数
+         * 范围是 -(2^53-1)到(2^53-1) (包含  -2**53-1到 2**53-1)
+         * Number.isSafeInteger(a);判断是不是安全整数
+         * Number.MAX_SAFE_INTEGER 最大安全整数
+         * Number.MAX_SAFE_INTEGER 最小安全整数
+         *
+         * Math新加方法
+         *  Math.trunc(12.999), 截断，只返回整数据部分，如12
+         *  Math.sign(a)，判断是正数还是负数，正为1，负为-1，0为0，-0为-0
+         *  Math.cbrt(a); 计算立方根 Math.cbrt(27) 返回 3
+         */
+        //二进制
+        let b0 = 0b010101; //
+        console.log(b0);
+        //八进制
+        let c0 = 0o666;
+        console.log(c0);
+        //十六进制 #ccc
+
+
+        console.log("1111");
+        function hehe({a=12,b,c}){
+            console.log(a,b,c);
+        }
+
+        hehe({c:99});
+        console.log("222222");
+
+        /**
+         * 18、proxy
+         * new proxy(target,handle),target：被代理的对象，handle对象代理做的什么操作
+         * handle有如下操作
+         * {
+         *     set(target,property,value){}
+         *     get(target,property){}
+         *     deleteProperty(target,property){}
+         *     has()
+         *     apply(target,property,args) //要配合Reflect.apply(fn,this,arg)，类似于fn.call(this,arg)和fn.apply(this,arg);
+         *     
+         * }
+         */
+
+        let myObj = {name:'张三', age: 100};
+        let myObjProxy = new Proxy(myObj,{
+            get(target,property){
+                console.log(target,property);
+            }
+        });
+
+        myObjProxy.name;
+
+        const DOM = new Proxy({},{
+            get(target,property){
+                return function (obj={},...children) {
+                    let el = document.createElement(property);
+                    //添加属性
+                    console.log(obj);
+                    for (let [key, value] of Object.entries(obj)) {
+                        console.log(key,value);
+                        el.setAttribute( key, value);
+                    }
+
+                    //创建子元素
+                    for(let child of children){
+                        if (typeof child == 'string') {
+                            child = document.createTextNode(child);
+                        }
+                        el.appendChild(child);
+                    }
+                   return el;
+                }
+            }
+        })
+
+        let oDiv = DOM.div({id:'mydiv',class:'divRed'},'这是我的DIV','随便创建了一下',
+                            DOM.a({href:'http://www.hao123.com'},'这个是我建的hao123'),
+                            DOM.ul({},
+                                DOM.li({},'第一个'),
+                                DOM.li({},'第二个'),
+                                DOM.li({},'第三个'),
+                            ));
+
+        console.log(oDiv);
+        window.onload = function () {
+            document.body.appendChild(oDiv);
+        };
+
+
+        let objTemp = {a:1, b: 2,sun:function(a,b){return a+b}};
+
+        let objTempP  = new Proxy(objTemp,{
+            set (target,property,value){
+                console.log(`设置属性：`,target,property,value);
+                target[property] = value;
+            },
+            deleteProperty(target,property){
+                console.log(`删除属性：`,target,property);
+                delete target[property]
+            },
+            apply(target,context,arg){
+                return Reflect.apply(...arguments);//...argument相当于target,context,arg,等同于Reflect.apply(target,context,arg);
+            }
+        });
+
+        objTempP.a = 100;
+
+        delete objTempP.b;
+        console.log(`值:`,objTempP);
+        console.log(`求和：`,objTempP.sun(1,4));
+        
+        /**
+         * Refect 判断属性是否存在
+         * Refect.has(Object,key)
+         */
+
+        console.log('Object是否存在assign:',Reflect.has(Object,'assign'));  //等同于 'assign' in Object
+
+        Reflect.deleteProperty(objTempP,'a'); //相当于delete objectTempP.a
+        console.log('删除a:',objTempP);
+        
+    </script>
+
+
+
+
+    <script type="module">
+        // console.log(aaa,bbb,ccc,ddd); // import会自动提升，解析时会提升到顶部执行
+        // import {aaa, bbb, ccc, ddd} from './module/1.js';
+        // import('./module/1.js').then(({aaa, bbb, ccc, ddd})=>{
+        //     console.log(aaa,bbb,ccc,ddd);
+        // })
+
+        // Promise.all([import('./module/2.js'), import('./module/3.js')]).then(([{a},{b}]) => {
+        //     console.log(a,b);
+        // })
+
+        // import dfsafas from './module/4.js';
+
+        // console.log(dfsafas);
+
+
+    </script>
+</head>
+<body>
+
+
+
+</body>
+</html>
